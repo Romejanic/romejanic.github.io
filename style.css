@@ -42,5 +42,13 @@
 	float: right;
 	width: 80%;
 	
-	background-color: #d2d2d2;
+	background-color: #b9b7b7;
+}
+
+.screenshot {
+	width: 50%;
+	border-radius: 20px;
+}
+.screenshots {
+	text-align: center;
 }
