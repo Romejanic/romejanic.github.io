@@ -25,6 +25,9 @@
 	left: 2%;
 	width: 96%;
 	height: 96%;
+	
+	min-width: 450px;
+	min-height: 340px;
 }
 
 .container {
@@ -41,8 +44,12 @@
 .container-right {
 	float: right;
 	width: 80%;
+	height: 95%;
 	
 	background-color: #b9b7b7;
+}
+.container-inner {
+	padding: 5px;
 }
 
 .screenshot {
@@ -51,4 +58,17 @@
 }
 .screenshots {
 	text-align: center;
+}
+
+.sidebar-list {
+	width: 100%;
+	padding: 5px;
+	font-weight: bold;
+}
+.sidebar-list-hover {
+	background-color: #cccccc;
+	transition: 0.3s;
+}
+.sidebar-list-active {
+	background-color: #b9b7b7;
 }
