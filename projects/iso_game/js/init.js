@@ -47,10 +47,7 @@ function draw() {
 			if(!assetsLoaded) {
 				var assetsLoaded = Math.max(nextAssetToLoad, 0);
 				var assetCount   = assetsToLoad.length;
-				var assetCurrPath = assetsLoaded < assetCount ? assetsToLoad[assetsLoaded].path : "";
-				if(assetCurrPath.indexOf("/") > -1) {
-					assetCurrPath = assetCurrPath.substring(assetCurrPath.indexOf("/")).hashCode();
-				}
+				var assetCurrPath = assetsLoaded < assetCount ? assetsToLoad[assetsLoaded].displayHash : "";
 	
 				viewportCtx.fillTextCentered("Loading assets: " + assetsLoaded + "/" + assetCount, canvasW/2, canvasH/2+10);
 				viewportCtx.fillTextCentered(assetCurrPath, canvasW/2, canvasH/2+25);

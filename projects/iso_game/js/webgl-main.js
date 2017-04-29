@@ -6,6 +6,8 @@ var scene = new Scene();
 var camera = new Camera();
 var sun = new Light([1, 1, 1], [45, 30, 45]);
 
+var shadowShader;
+
 var startTime;
 
 function initWebGL() {
@@ -46,6 +48,9 @@ function initGL() {
 	camera.rotation   = [-45.0, 45.0, 0.0];
 	camera.orthoScale = 25.0;
 	
+	sun.initShadowmap(gl);
+	shadowShader = Shader.loadShaderProgram(gl, "shadow");
+	
 	var terrain = new GameObject();
 	terrain.setModel(generateTerrain(gl));
 	terrain.clipDistance = -1;
@@ -84,6 +89,20 @@ function render() {
 	var t = (Date.now()-startTime)/1000;
 	calcMatrices(w, h, t);
 	
+	gl.bindTexture(gl.TEXTURE_2D, null);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, sun.shadowFBO);
+	gl.viewport(0, 0, sun.shadowRes, sun.shadowRes);
+	gl.clear(gl.DEPTH_BUFFER_BIT);
+	sun.drawingShadows = true;
+	
+	shadowShader.bind();
+	sun.applyToShader(shadowShader);
+	scene.render(camera);
+	shadowShader.unbind();
+	
+	sun.drawingShadows = false;
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	
 	gl.viewport(0, 0, w, h);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -98,16 +117,16 @@ function render() {
 function updateGame() {
 	var speed = 1/5;
 	if(Key.isDown(Key.UP)) {
-		focusPos[2] -= speed;
-	}
-	if(Key.isDown(Key.DOWN)) {
-		focusPos[2] += speed;
-	}
-	if(Key.isDown(Key.LEFT)) {
 		focusPos[0] -= speed;
 	}
-	if(Key.isDown(Key.RIGHT)) {
+	if(Key.isDown(Key.DOWN)) {
 		focusPos[0] += speed;
+	}
+	if(Key.isDown(Key.LEFT)) {
+		focusPos[2] += speed;
+	}
+	if(Key.isDown(Key.RIGHT)) {
+		focusPos[2] -= speed;
 	}
 }
 
@@ -131,4 +150,5 @@ function calcMatrices(w, h, t) {
 	
 	camera.calculateMatrices(w, h);
 	scene.calculateMatrices();
+	sun.calculateMatrices(camera);
 }

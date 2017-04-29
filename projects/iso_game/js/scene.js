@@ -27,11 +27,15 @@ Scene.prototype.render = function(camera) {
 				vec3.distance(camera.clipPosition ? camera.clipPosition : camera.position, val.position) > val.clipDistance) {
 				return;
 			}
-			val.model.shader.bind();
-			camera.applyToShader(val.model.shader);
-			sun.applyToShader(val.model.shader);
-			val.model.shader.setMat4("modelMat", val.modelMat);
-			if(val.modelTextures) {
+			if(!sun.drawingShadows) {
+				val.model.shader.bind();
+				camera.applyToShader(val.model.shader);
+				sun.applyToShader(val.model.shader);
+				val.model.shader.setMat4("modelMat", val.modelMat);
+			} else {
+				shadowShader.setMat4("modelMat", val.modelMat);
+			}
+			if(val.modelTextures && !sun.drawingShadows) {
 				var texUnit = 0;
 				val.modelTextures.forEach(function(tex){
 					val.model.shader.setInt(tex.uniformName, texUnit);
@@ -40,6 +44,7 @@ Scene.prototype.render = function(camera) {
 					texUnit++;
 				});
 			}
+			val.model.overrideShader = sun.drawingShadows;
 			val.model.render();
 		}
 	});
@@ -96,7 +101,63 @@ function Light(color, direction) {
 	this.direction = direction;
 }
 
+Light.prototype.initShadowmap = function(gl) {
+	this.shadowFBO = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowFBO);
+	
+	this.shadowRes = 2048;
+	this.shadowDst = 50;
+	
+	this.shadowTex = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, this.shadowTex);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, this.shadowRes, this.shadowRes, 0, gl.DEPTH_COMPONENT, gl.FLOAT, null);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.shadowTex, 0);
+	
+	gl.drawBuffers([gl.NONE]);
+	var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+	
+	gl.bindTexture(gl.TEXTURE_2D, null);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	
+	if(status != gl.FRAMEBUFFER_COMPLETE) {
+		console.error("Shadowmap framebuffer is incomplete!");
+		gl.deleteFramebuffer(this.shadowFBO);
+		gl.deleteTexture(this.shadowTex);
+		
+		return;
+	}
+	
+	this.shadowProj = mat4.create();
+	this.shadowView = mat4.create();
+	this.hasShadowmap = true;
+	this.drawingShadows = false;
+};
+
+Light.prototype.calculateMatrices = function(camera) {
+	mat4.ortho(this.shadowProj, -this.shadowDst, this.shadowDst, -this.shadowDst, this.shadowDst, -500, 500);
+	
+	var shadowPos = [camera.position[0], 0, camera.position[2]];
+	var shadowDir = vec3.normalize(vec3.create(), this.direction);
+	mat4.lookAt(this.shadowView, vec3.add(vec3.create(), shadowPos, shadowDir), shadowPos, [0, 1, 0]);
+};
+
 Light.prototype.applyToShader = function(shader) {
-	shader.setVec3("lightColor", this.color);
-	shader.setVec3("lightDir", vec3.normalize(vec3.create(), this.direction));
+	if(!this.drawingShadows) {
+		shader.setVec3("lightColor", this.color);
+		shader.setVec3("lightDir", vec3.normalize(vec3.create(), this.direction));
+	}
+	if(this.hasShadowmap) {
+		shader.setMat4("shadowProj", this.shadowProj);
+		shader.setMat4("shadowView", this.shadowView);
+		
+		if(!this.drawingShadows) {
+			shader.setInt("shadowmap", 5);
+			gl.activeTexture(gl.TEXTURE5);
+			gl.bindTexture(gl.TEXTURE_2D, this.shadowTex);
+		}
+	}
 }

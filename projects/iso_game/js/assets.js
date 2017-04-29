@@ -33,6 +33,26 @@ var assetsToLoad = [
 	name: "simple_model_fs",
 	path: "assets/shaders/simple_model.fs",
 	type: "shader"
+},
+{
+	name: "shadow_vs",
+	path: "assets/shaders/shadow.vs",
+	type: "shader"
+},
+{
+	name: "shadow_fs",
+	path: "assets/shaders/shadow.fs",
+	type: "shader"
+},
+{
+	name: "shadow_debug_vs",
+	path: "assets/shaders/shadow_debug.vs",
+	type: "shader"
+},
+{
+	name: "shadow_debug_fs",
+	path: "assets/shaders/shadow_debug.fs",
+	type: "shader"
 }
 ];
 var nextAssetToLoad = -1;
@@ -46,6 +66,9 @@ function loadAssets(onfinish) {
 	nextAssetToLoad = 0;
 	loader = document.createElement("div");
 	
+	assetsToLoad.forEach(function(asset){
+		asset.displayHash = md5(asset.path);
+	});
 	loadNextAsset();
 }
 
