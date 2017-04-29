@@ -66,7 +66,7 @@ function initGL() {
 		
 		x = off + terrainSize * Math.random();
 		z = off + terrainSize * Math.random();
-		y = getHeight(x, z);
+		y = getHeight(x, z) - 0.5;
 		r = 360 * Math.random();
 		s = 0.9 + 0.6 * Math.random();
 		

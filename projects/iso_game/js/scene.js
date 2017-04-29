@@ -12,6 +12,11 @@ Scene.prototype.addObject = function(object) {
 Scene.prototype.calculateMatrices = function() {
 	this.objects.forEach(function(val){
 		if(val.modelMat) {
+			val.culled = val.clipDistance && val.clipDistance > -1 &&
+			vec3.distance(camera.clipPosition ? camera.clipPosition : camera.position, val.position) > val.clipDistance;
+			if(val.culled) {
+				return;
+			}
 			mat4.identity(val.modelMat);
 			mat4.translate(val.modelMat, val.modelMat, val.position);
 			mat4.rotateDegrees(val.modelMat, val.modelMat, val.rotation);
@@ -23,8 +28,7 @@ Scene.prototype.calculateMatrices = function() {
 Scene.prototype.render = function(camera) {
 	this.objects.forEach(function(val){
 		if(val.model) {
-			if(val.clipDistance && val.clipDistance > -1 &&
-				vec3.distance(camera.clipPosition ? camera.clipPosition : camera.position, val.position) > val.clipDistance) {
+			if(val.culled) {
 				return;
 			}
 			if(!sun.drawingShadows) {
@@ -62,6 +66,7 @@ GameObject.prototype.setModel = function(model) {
 	}
 	if(!this.clipDistance) {
 		this.clipDistance = 50.0;
+		this.culled = false;
 	}
 	this.model = model;
 };

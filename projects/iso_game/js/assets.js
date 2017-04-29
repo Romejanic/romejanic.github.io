@@ -43,16 +43,6 @@ var assetsToLoad = [
 	name: "shadow_fs",
 	path: "assets/shaders/shadow.fs",
 	type: "shader"
-},
-{
-	name: "shadow_debug_vs",
-	path: "assets/shaders/shadow_debug.vs",
-	type: "shader"
-},
-{
-	name: "shadow_debug_fs",
-	path: "assets/shaders/shadow_debug.fs",
-	type: "shader"
 }
 ];
 var nextAssetToLoad = -1;
