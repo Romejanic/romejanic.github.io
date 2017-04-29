@@ -8,10 +8,12 @@ layout(location = 2) in vec3 normal;
 uniform mat4 projMat;
 uniform mat4 viewMat;
 uniform mat4 modelMat;
+uniform vec3 cameraPos;
 
 out vec3 v_pos;
 out vec2 v_uv;
 out vec3 v_n;
+out vec3 v_eye;
 
 void main() {
 	vec4 worldPos = modelMat * vec4(vertex, 1.);
@@ -20,4 +22,5 @@ void main() {
 	v_pos = worldPos.xyz;
 	v_uv = texCoords;
 	v_n = (modelMat * vec4(normal, 0.)).xyz;
+	v_eye = cameraPos - worldPos.xyz;
 }

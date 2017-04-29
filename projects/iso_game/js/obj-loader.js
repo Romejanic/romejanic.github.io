@@ -26,14 +26,15 @@ obj.loadModel = function(gl, modelName, shaderName) {
 			ov.push(parseFloat(parts[3]));
 		} else if(parts[0] == "vt") {
 			ot.push(parseFloat(parts[1]));
-			ot.push(parseFloat(parts[2]));
+			ot.push(parseFloat(1-parts[2]));
 		} else if(parts[0] == "vn") {
 			on.push(parseFloat(parts[1]));
 			on.push(parseFloat(parts[2]));
 			on.push(parseFloat(parts[3]));
 		} else if(parts[0] == "f") {
-			for(var j = 0; j < 3; j++) {
+			for(var j = 1; j < 4; j++) {
 				var face = parts[j].split("/");
+// 				console.log(face);
 				
 				var vi = parseInt(face[0])-1;
 				var ti = parseInt(face[1])-1;
@@ -46,6 +47,11 @@ obj.loadModel = function(gl, modelName, shaderName) {
 			}
 		}
 	});
+	
+	// console.log(v);
+// 	console.log(t);
+// 	console.log(n);
+// 	console.log(i);
 	
 	return new VAOBuilder(gl)
 	.addAttribute(0, 3, v)

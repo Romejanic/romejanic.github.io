@@ -1,21 +1,19 @@
 var gl;
 
-var projMat = mat4.create();
-var viewMat = mat4.create();
-var cameraPos = [0, 3, 5];
 var focusPos  = [0, 0, 0];
-var viewSize = 25.0;
 
-var terrainVAO;
-var buildingVAO;
+var scene = new Scene();
+var camera = new Camera();
+var sun = new Light([1, 1, 1], [45, 30, 45]);
 
 var startTime;
 
 function initWebGL() {
+	var contextOps = {antialias: false};
 	var canvas = document.createElement("canvas");
-	gl = canvas.getContext("webgl2");
+	gl = canvas.getContext("webgl2", contextOps);
 	if(!gl) {
-		gl = canvas.getContext("experimental-webgl2");
+		gl = canvas.getContext("experimental-webgl2", contextOps);
 		console.warn("Core WebGL 2 not found! Falling back on experimental...");
 	}
 	if(!gl) {
@@ -25,7 +23,7 @@ function initWebGL() {
 	}
 	
 	Shader.getShaderFile = function(fileName, fileType) {
-		var path = fileName + "." + fileType;
+		var path = fileName + "_" + fileType;
 		if(!assets.has(path)) {
 			console.error("Shader " + path + " not found!");
 			return null;
@@ -34,6 +32,7 @@ function initWebGL() {
 	};
 	
 	initGL();
+	setInterval(updateGame, 1/60 * 1000);
 }
 
 function initGL() {
@@ -44,11 +43,37 @@ function initGL() {
 	gl.depthFunc(gl.LEQUAL);
 	gl.cullFace(gl.BACK);
 	
-	terrainVAO = generateTerrain(gl);
+	camera.rotation   = [-45.0, 45.0, 0.0];
+	camera.orthoScale = 25.0;
 	
-	buildingVAO = obj.loadModel(gl, "suzanne", "simple_model");
-	buildingVAO.position = [0, 3, 0];
-	buildingVAO.modelMat = mat4.create();
+	var terrain = new GameObject();
+	terrain.setModel(generateTerrain(gl));
+	terrain.clipDistance = -1;
+	scene.addObject(terrain);
+	
+	var treeVAO = obj.loadModel(gl, "tree_1", "simple_model");
+	var treeTex = loadTexture("tree_1_d");
+	treeTex.uniformName = "diffuseTex";
+	
+	var x, y, z, r, s, clipDist = camera.orthoScale * 3, off = -terrainSize / 2;
+	for(var i = 0; i < 6000; i++) {
+		var tree = new GameObject();
+		
+		x = off + terrainSize * Math.random();
+		z = off + terrainSize * Math.random();
+		y = getHeight(x, z);
+		r = 360 * Math.random();
+		s = 0.9 + 0.6 * Math.random();
+		
+		vec3.set(tree.position, x, y, z);
+		vec3.set(tree.rotation, 0, r, 0);
+		vec3.set(tree.scale, s, s, s);
+		
+		tree.setModel(treeVAO);
+		tree.clipDistance = clipDist;
+		tree.modelTextures = [treeTex];
+		scene.addObject(tree);
+	}
 	
 	requestAnimationFrame(render);
 	startTime = Date.now();
@@ -62,16 +87,7 @@ function render() {
 	gl.viewport(0, 0, w, h);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	terrainVAO.shader.bind();
-	terrainVAO.shader.setMat4("projMat", projMat);
-	terrainVAO.shader.setMat4("viewMat", viewMat);
-	terrainVAO.render();
-
-	buildingVAO.shader.bind();
-	buildingVAO.shader.setMat4("projMat", projMat);
-	buildingVAO.shader.setMat4("viewMat", viewMat);
-	buildingVAO.shader.setMat4("modelMat", mat4.create());
-	buildingVAO.render();
+	scene.render(camera);
 
 	requestAnimationFrame(render);
 	if(!webglInitialized) {
@@ -79,22 +95,40 @@ function render() {
 	}
 }
 
+function updateGame() {
+	var speed = 1/5;
+	if(Key.isDown(Key.UP)) {
+		focusPos[2] -= speed;
+	}
+	if(Key.isDown(Key.DOWN)) {
+		focusPos[2] += speed;
+	}
+	if(Key.isDown(Key.LEFT)) {
+		focusPos[0] -= speed;
+	}
+	if(Key.isDown(Key.RIGHT)) {
+		focusPos[0] += speed;
+	}
+}
+
+function loadTexture(textureName) {
+	if(!assets.has(textureName)) {
+		console.error("Texture " + textureName + " not loaded!");
+		return null;
+	}
+	var texImage = assets.get(textureName);
+	var tex = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, tex);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, texImage.width, texImage.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, texImage);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+	return tex;
+}
+
 function calcMatrices(w, h, t) {
-	var viewAspect = w / h;
-	mat4.ortho(projMat, -viewSize * viewAspect, viewSize * viewAspect, -viewSize, viewSize, -1000, 1000);
-	//mat4.perspective(projMat, glMatrix.toRadian(70.0), w/h, 0.1, 1000.0);
+	vec3.set(camera.position, focusPos[0], focusPos[1] + 10, focusPos[2] + 25);
 	
-	vec3.set(cameraPos, focusPos[0], focusPos[1] + 10, focusPos[2] + 25);
-	
-	mat4.identity(viewMat);
-	mat4.rotateX(viewMat, viewMat, glMatrix.toRadian(45.0));
-	mat4.rotateY(viewMat, viewMat, glMatrix.toRadian(-45.0));
-	mat4.translate(viewMat, viewMat, vec3.negate(vec3.create(), cameraPos));
-	//mat4.lookAt(viewMat, cameraPos, [0, 0, 0], [0, 1, 0]);
-	
-	var scale = 3;
-	mat4.identity(buildingVAO.modelMat);
-	mat4.translate(buildingVAO.modelMat, buildingVAO.modelMat, buildingVAO.position);
-	mat4.rotateY(buildingVAO.modelMat, buildingVAO.modelMat, glMatrix.toRadian(t * 45.0));
-	mat4.scale(buildingVAO.modelMat, buildingVAO.modelMat, [scale,scale,scale]);
+	camera.calculateMatrices(w, h);
+	scene.calculateMatrices();
 }

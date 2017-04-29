@@ -1,4 +1,5 @@
 var offsetPos = -50;
+var hideGUI = false;
 
 var mouseX = -1, mouseY = -1;
 
@@ -14,9 +15,12 @@ function drawGUI(ctx) {
 	
 	drawButton(ctx, "button!", 70, offsetPos + 5, 100, 40);
 	
-	if(offsetPos < 0) {
+	if(offsetPos < 0 && !hideGUI) {
 		offsetPos += (1/60) * 100;
 		offsetPos  = Math.min(offsetPos, 0);
+	} else if(offsetPos > -50 && hideGUI) {
+		offsetPos -= (1/60) * 100;
+		offsetPos  = Math.max(offsetPos, -50);
 	}
 }
 

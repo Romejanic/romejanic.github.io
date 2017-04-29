@@ -1,7 +1,7 @@
 var viewportCtx;
 var initBackground;
 
-var assetsLoaded;
+var assetsLoaded = false;
 
 var webglOpacity = 0;
 var webglInitialized;
@@ -12,7 +12,7 @@ function init() {
 	initBackground = document.getElementById("background-img");
 	
 	$(viewportCtx.canvas).mousemove(function(e){
-		mouseX = e.pageX, mouseY = e.pageY;
+		mouseX = e.pageX, mouseY = e.pageY; 
 	});
 	
 	loadAssets(function(){
@@ -47,8 +47,13 @@ function draw() {
 			if(!assetsLoaded) {
 				var assetsLoaded = Math.max(nextAssetToLoad, 0);
 				var assetCount   = assetsToLoad.length;
+				var assetCurrPath = assetsLoaded < assetCount ? assetsToLoad[assetsLoaded].path : "";
+				if(assetCurrPath.indexOf("/") > -1) {
+					assetCurrPath = assetCurrPath.substring(assetCurrPath.indexOf("/")).hashCode();
+				}
 	
 				viewportCtx.fillTextCentered("Loading assets: " + assetsLoaded + "/" + assetCount, canvasW/2, canvasH/2+10);
+				viewportCtx.fillTextCentered(assetCurrPath, canvasW/2, canvasH/2+25);
 	
 				var progress = Math.min(Math.max(assetsLoaded / assetCount, 0), 1);
 				viewportCtx.fillStyle = "gray";

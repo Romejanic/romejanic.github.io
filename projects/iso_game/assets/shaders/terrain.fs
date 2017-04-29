@@ -4,14 +4,15 @@ precision highp float;
 in vec3 v_pos;
 in vec2 v_uv;
 
-out vec4 fragColor;
+uniform vec3 lightColor;
+uniform vec3 lightDir;
 
-const vec3 lightDir = normalize(vec3(45.,30.,45.));
+out vec4 fragColor;
 
 void main() {
 	vec3 n = normalize(-cross(dFdy(v_pos), dFdx(v_pos)));
 	
 	float d = max(dot(lightDir,n),.15);
-	fragColor.xyz = vec3(.2,1.,.2) * d;
+	fragColor.xyz = vec3(.2,1.,.2) * (lightColor * d);
 	fragColor.w = 1.;
 }
