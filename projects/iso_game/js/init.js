@@ -11,6 +11,10 @@ function init() {
 	viewportCtx = document.getElementById("viewportCanvas").getContext("2d");
 	initBackground = document.getElementById("background-img");
 	
+	$(viewportCtx.canvas).mousemove(function(e){
+		mouseX = e.pageX, mouseY = e.pageY;
+	});
+	
 	loadAssets(function(){
 		assetsLoaded = true;
 		initWebGL();
@@ -75,7 +79,11 @@ function draw() {
 		viewportCtx.drawImage(gl.canvas, 0, 0);
 		viewportCtx.globalAlpha = 1.0;
 		
-		webglOpacity = Math.min(webglOpacity + (1/60), 1);
+		if(webglOpacity < 1) {
+			webglOpacity = Math.min(webglOpacity + (1/60), 1);
+		} else {
+			drawGUI(viewportCtx);
+		}
 	}
 	
 	requestAnimationFrame(draw);
