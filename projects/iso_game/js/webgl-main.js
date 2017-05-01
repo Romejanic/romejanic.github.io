@@ -4,7 +4,8 @@ var focusPos  = [0, 0, 0];
 
 var scene = new Scene();
 var camera = new Camera();
-var sun = new Light([1, 1, 1], [45, 30, 45]);
+var sun = new Light([1, 1, 1], [45, 30, 10]);
+var player;
 
 var shadowShader;
 
@@ -46,7 +47,7 @@ function initGL() {
 	gl.cullFace(gl.BACK);
 	
 	camera.rotation   = [-45.0, 45.0, 0.0];
-	camera.orthoScale = 25.0;
+	camera.orthoScale = 15.0;
 	
 	sun.initShadowmap(gl);
 	shadowShader = Shader.loadShaderProgram(gl, "shadow");
@@ -79,6 +80,15 @@ function initGL() {
 		tree.modelTextures = [treeTex];
 		scene.addObject(tree);
 	}
+	
+	player = new GameObject();
+	player.position = [0, getHeight(0, 0), 0];
+	player.setModel(obj.loadModel(gl, "player", "simple_model"));
+	var playerTex = loadTexture("player_d");
+	playerTex.uniformName = "diffuseTex";
+	player.modelTextures = [playerTex];
+	player.clipDistance = -1;
+	scene.addObject(player);
 	
 	requestAnimationFrame(render);
 	startTime = Date.now();
@@ -115,18 +125,27 @@ function render() {
 }
 
 function updateGame() {
-	var speed = 1/5;
+	var moveSpeed = 1/10;
+	var turnSpeed = 3;
 	if(Key.isDown(Key.UP)) {
-		focusPos[0] -= speed;
+		var a = glMatrix.toRadian(player.rotation[1]);
+		var c = Math.cos(a), s = Math.sin(a);
+		player.position[0] -= c * moveSpeed;
+		player.position[2] += s * moveSpeed;
+		player.position[1]  = getHeight(player.position[0], player.position[2]);
 	}
 	if(Key.isDown(Key.DOWN)) {
-		focusPos[0] += speed;
+		var a = glMatrix.toRadian(player.rotation[1]);
+		var c = Math.cos(a), s = Math.sin(a);
+		player.position[0] += c * moveSpeed;
+		player.position[2] -= s * moveSpeed;
+		player.position[1]  = getHeight(player.position[0], player.position[2]);
 	}
 	if(Key.isDown(Key.LEFT)) {
-		focusPos[2] += speed;
+		player.rotation[1] += turnSpeed;
 	}
 	if(Key.isDown(Key.RIGHT)) {
-		focusPos[2] -= speed;
+		player.rotation[1] -= turnSpeed;
 	}
 }
 
@@ -146,7 +165,7 @@ function loadTexture(textureName) {
 }
 
 function calcMatrices(w, h, t) {
-	vec3.set(camera.position, focusPos[0], focusPos[1] + 10, focusPos[2] + 25);
+	vec3.set(camera.position, player.position[0], player.position[1], player.position[2] + 5);
 	
 	camera.calculateMatrices(w, h);
 	scene.calculateMatrices();

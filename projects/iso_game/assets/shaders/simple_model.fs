@@ -20,7 +20,7 @@ void main() {
 	vec3 r = normalize(-reflect(normalize(v_eye), n));
 	
 	float shadow = 1.;
-	if(texture(shadowmap, v_sc.xy).r < (v_sc.z-.003)) {
+	if(texture(shadowmap, v_sc.xy).r < (v_sc.z-.001)) {
 		shadow = 0.;
 	}
 	

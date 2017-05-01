@@ -5,11 +5,21 @@ var assetsToLoad = [
 	path: "assets/models/tree_1.obj",
 	type: "model"
 },
+{
+	name: "player",
+	path: "assets/models/player.obj",
+	type: "model"
+},
 
 // textures
 {
 	name: "tree_1_d",
 	path: "assets/textures/tree_1_d.png",
+	type: "texture"
+},
+{
+	name: "player_d",
+	path: "assets/textures/player_d.png",
 	type: "texture"
 },
 

@@ -4,7 +4,7 @@ var hideGUI = false;
 var mouseX = -1, mouseY = -1;
 
 function drawGUI(ctx) {
-	ctx.fillStyle = "white";
+	ctx.fillStyle = "black";
 	ctx.globalAlpha = 0.75;
 	ctx.fillRect(10, offsetPos, 520, 50);
 		

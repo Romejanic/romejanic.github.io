@@ -143,7 +143,10 @@ Light.prototype.initShadowmap = function(gl) {
 };
 
 Light.prototype.calculateMatrices = function(camera) {
-	mat4.ortho(this.shadowProj, -this.shadowDst, this.shadowDst, -this.shadowDst, this.shadowDst, -500, 500);
+	if(!this.hasShadowmap) {
+		return;
+	}
+	mat4.ortho(this.shadowProj, -this.shadowDst, this.shadowDst, -this.shadowDst, this.shadowDst, -75, 75);
 	
 	var shadowPos = [camera.position[0], 0, camera.position[2]];
 	var shadowDir = vec3.normalize(vec3.create(), this.direction);

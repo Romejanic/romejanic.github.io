@@ -19,9 +19,9 @@ CanvasRenderingContext2D.prototype.fillTextCentered = function(text, x, y) {
 }
 
 mat4.rotateDegrees = function(out, mat, rotation) {
-	this.rotateX(out, mat, rotation[0]);
-	this.rotateY(out, mat, rotation[1]);
-	this.rotateZ(out, mat, rotation[2]);
+	this.rotateX(out, mat, glMatrix.toRadian(rotation[0]));
+	this.rotateY(out, mat, glMatrix.toRadian(rotation[1]));
+	this.rotateZ(out, mat, glMatrix.toRadian(rotation[2]));
 };
 
 // Thnx Arthur Schreiber!
@@ -48,16 +48,3 @@ var Key = {
 };
 window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
 window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
-
-// Thnx esmiralha!
-// Source: http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
-String.prototype.hashCode = function() {
-  var hash = 0, i, chr;
-  if (this.length === 0) return hash;
-  for (i = 0; i < this.length; i++) {
-    chr   = this.charCodeAt(i);
-    hash  = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-};
