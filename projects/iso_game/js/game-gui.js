@@ -4,11 +4,8 @@ var hideGUI = false;
 var mouseX = -1, mouseY = -1;
 
 function drawGUI(ctx) {
-	ctx.fillStyle = "black";
-	ctx.globalAlpha = 0.75;
-	ctx.fillRect(10, offsetPos, 520, 50);
-		
-	ctx.globalAlpha = 1.0;
+	drawBlurryRect(ctx, 10, offsetPos, 520, 50);
+	
 	ctx.fillStyle = "white";
 	ctx.font = "25px Arial";
 	ctx.fillText("Test", 15, offsetPos + 30);
@@ -22,6 +19,12 @@ function drawGUI(ctx) {
 		offsetPos -= (1/60) * 100;
 		offsetPos  = Math.max(offsetPos, -50);
 	}
+}
+
+function drawBlurryRect(ctx, x, y, w, h) {
+	ctx.filter = "blur(5px) brightness(25%)";
+	ctx.drawImage(gl.canvas, x, y, w, h, x, y, w, h);
+	ctx.filter = "none";
 }
 
 function drawButton(ctx, text, x, y, w, h) {

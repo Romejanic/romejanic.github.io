@@ -34,6 +34,10 @@ function initWebGL() {
 		return assets.get(path).trim();
 	};
 	
+	if(gl.getExtension("EXT_texture_filter_anisotropic")) {
+		console.log("WebGL: Anisotropic filtering supported!");
+	}
+	
 	initGL();
 	setInterval(updateGame, 1/60 * 1000);
 }
@@ -156,10 +160,16 @@ function loadTexture(textureName) {
 	}
 	var texImage = assets.get(textureName);
 	var tex = gl.createTexture();
+	var aniso = gl.getExtension("EXT_texture_filter_anisotropic");
 	gl.bindTexture(gl.TEXTURE_2D, tex);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	if(aniso) {
+		var anisoLevel = Math.min(4, gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+		gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel);
+	}
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, texImage.width, texImage.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, texImage);
+	gl.generateMipmap(gl.TEXTURE_2D);
 	gl.bindTexture(gl.TEXTURE_2D, null);
 	return tex;
 }
