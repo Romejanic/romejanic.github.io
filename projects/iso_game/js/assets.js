@@ -53,6 +53,36 @@ var assetsToLoad = [
 	name: "shadow_fs",
 	path: "assets/shaders/shadow.fs",
 	type: "shader"
+},
+{
+	name: "post_pass_vs",
+	path: "assets/shaders/post_pass.vs",
+	type: "shader"
+},
+{
+	name: "post_pass_fs",
+	path: "assets/shaders/post_pass.fs",
+	type: "shader"
+},
+{
+	name: "post_invert_vs",
+	path: "assets/shaders/post_invert.vs",
+	type: "shader"
+},
+{
+	name: "post_invert_fs",
+	path: "assets/shaders/post_invert.fs",
+	type: "shader"
+},
+{
+	name: "post_bloom_vs",
+	path: "assets/shaders/post_bloom.vs",
+	type: "shader"
+},
+{
+	name: "post_bloom_fs",
+	path: "assets/shaders/post_bloom.fs",
+	type: "shader"
 }
 ];
 var nextAssetToLoad = -1;
@@ -74,6 +104,7 @@ function loadAssets(onfinish) {
 
 function loadNextAsset() {
 	if(nextAssetToLoad >= assetsToLoad.length) {
+		$(loader).text("");
 		callback();
 		return;
 	}

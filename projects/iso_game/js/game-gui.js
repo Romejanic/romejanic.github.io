@@ -4,14 +4,18 @@ var hideGUI = false;
 var mouseX = -1, mouseY = -1;
 
 function drawGUI(ctx) {
-	drawBlurryRect(ctx, 10, offsetPos, 520, 50);
+	ctx.globalAlpha = 1.0;
+	ctx.translate(0, offsetPos);
+
+	drawBlurryRect(ctx, 10, 0, 520, 50);
 	
 	ctx.fillStyle = "white";
 	ctx.font = "25px Arial";
-	ctx.fillText("Test", 15, offsetPos + 30);
+	ctx.fillText("Test", 15, 30);
 	
-	drawButton(ctx, "button!", 70, offsetPos + 5, 100, 40);
+	drawButton(ctx, "button!", 70, 5, 100, 40);
 	
+	ctx.translate(0, -offsetPos);
 	if(offsetPos < 0 && !hideGUI) {
 		offsetPos += (1/60) * 100;
 		offsetPos  = Math.min(offsetPos, 0);
@@ -19,6 +23,15 @@ function drawGUI(ctx) {
 		offsetPos -= (1/60) * 100;
 		offsetPos  = Math.max(offsetPos, -50);
 	}
+	
+	ctx.globalAlpha = 1.0 - Math.abs(offsetPos / 50);
+	
+	var playerPos = camera.getWorldPosOnScreen(player.position, ctx.canvas.width, ctx.canvas.height);
+	ctx.font = "15px Arial";
+	ctx.shadowColor = "black";
+	ctx.shadowBlur = 5;
+	ctx.fillTextCentered("Player", playerPos[0], playerPos[1] - 70);
+	ctx.shadowBlur = 0;
 }
 
 function drawBlurryRect(ctx, x, y, w, h) {

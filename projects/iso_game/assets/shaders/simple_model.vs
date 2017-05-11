@@ -26,7 +26,7 @@ void main() {
 	v_pos = worldPos.xyz;
 	v_uv = texCoords;
 	v_n = (modelMat * vec4(normal, 0.)).xyz;
-	v_eye = cameraPos - worldPos.xyz;
+	v_eye = (viewMat * vec4(0.,0.,-1.,0.)).xyz;
 	
 	vec4 shadowCoords = shadowProj * shadowView * worldPos;
 	v_sc = (shadowCoords.xyz/shadowCoords.w) * .5 + .5;

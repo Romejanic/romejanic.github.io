@@ -101,6 +101,15 @@ Camera.prototype.applyToShader = function(shader) {
 	shader.setVec3("cameraPos", this.position);
 };
 
+Camera.prototype.getWorldPosOnScreen = function(pos, screenWidth, screenHeight) {
+	var p = [pos[0], pos[1], pos[2], 1.0];
+	vec4.transformMat4(p, p, this.viewMat);
+	vec4.transformMat4(p, p, this.projMat);
+	var x =  (p[0]/p[3]) * .5 + .5;
+	var y = -(p[1]/p[3]) * .5 + .5;
+	return [x * screenWidth, y * screenHeight];
+};
+
 function Light(color, direction) {
 	this.color = color;
 	this.direction = direction;
@@ -146,7 +155,7 @@ Light.prototype.calculateMatrices = function(camera) {
 	if(!this.hasShadowmap) {
 		return;
 	}
-	mat4.ortho(this.shadowProj, -this.shadowDst, this.shadowDst, -this.shadowDst, this.shadowDst, -75, 75);
+	mat4.ortho(this.shadowProj, -this.shadowDst, this.shadowDst, -this.shadowDst, this.shadowDst, -50, 30);
 	
 	var shadowPos = [camera.position[0], 0, camera.position[2]];
 	var shadowDir = vec3.normalize(vec3.create(), this.direction);

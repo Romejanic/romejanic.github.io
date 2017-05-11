@@ -181,7 +181,7 @@ Shader.loadShaderProgram = function(gl, shaderName) {
 		gl.deleteProgram(program);
 		gl.deleteShader(vs);
 		gl.deleteShader(fs);
-		console.error("Program link failed!\n" + program);
+		console.error("Program link failed!\n" + log);
 		return null;
 	}
 	
