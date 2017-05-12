@@ -1,6 +1,8 @@
 var gl;
 var shadowShader;
 
+var emptyTex;
+
 var startTime;
 var updateInterval;
 
@@ -46,12 +48,19 @@ function initGL() {
 	gl.depthFunc(gl.LEQUAL);
 	gl.cullFace(gl.BACK);
 	
-	shadowShader = Shader.loadShaderProgram(gl, "shadow");
-	
 	if(!loadPostProcessing(gl)) {
 		return false;
 	}
 	game.init();
+	
+	shadowShader = Shader.loadShaderProgram(gl, "shadow");
+	
+	emptyTex = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, emptyTex);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
 	
 	requestAnimationFrame(render);
 	startTime = Date.now();
@@ -76,11 +85,13 @@ function render() {
 	
 	sun.drawingShadows = false;
 	gl.bindTexture(gl.TEXTURE_2D, null);
-	gl.bindFramebuffer(gl.FRAMEBUFFER, postProcessFBO);
+	if(postProcessFBO) {
+		gl.bindFramebuffer(gl.FRAMEBUFFER, postProcessFBO);
 	
-	gl.viewport(0, 0, w, h);
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	scene.render(camera);
+		gl.viewport(0, 0, postProcessFBO.width, postProcessFBO.height);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		scene.render(camera);
+	}
 	doPostProcessing();
 	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);

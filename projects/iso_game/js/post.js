@@ -1,9 +1,12 @@
 var postProcessFBO;
 var postProcessTex;
+var postProcessDepthBuf;
 var postProcessVAO;
 
 var postProcessBlitFBO;
 var postProcessBlitTex;
+
+var floatingPointSupported;
 
 var postEffects = [
 {
@@ -13,46 +16,15 @@ var postEffects = [
 ];
 
 function loadPostProcessing(gl) {
-	var floatingPointSupported = true;
+	floatingPointSupported = true;
 	if(!gl.getExtension("EXT_color_buffer_float")) {
 		console.warn("WebGL: EXT_color_buffer_float not supported! HDR rendering not possible!");
 		floatingPointSupported = false;
 	} else {
-		console.log("WebGL: Floating point textures supported!");
+		console.log("WebGL: Floating point color buffers supported!");
 	}
 
-	postProcessFBO = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, postProcessFBO);
-	postProcessTex = createColorTex(gl, floatingPointSupported);
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, postProcessTex, 0);
-	
-	var postProcessDepthBuf = gl.createRenderbuffer();
-	gl.bindRenderbuffer(gl.RENDERBUFFER, postProcessDepthBuf);
-	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, gl.canvas.width, gl.canvas.height);
-	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, postProcessDepthBuf);
-	gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
-	
-	var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-	if(status != gl.FRAMEBUFFER_COMPLETE) {
-		console.error("Main framebuffer incomplete! Status " + status);
-		webglError = "Failure while initialising WebGL!";
-		return false;
-	}
-	
-	postProcessBlitFBO = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, postProcessBlitFBO);
-	postProcessBlitTex = createColorTex(gl, floatingPointSupported);
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, postProcessBlitTex, 0);
-	
-	var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.bindTexture(gl.TEXTURE_2D, null);
-	if(status != gl.FRAMEBUFFER_COMPLETE) {
-		console.error("Main framebuffer incomplete! Status " + status);
-		webglError = "Failure while initialising WebGL!";
-		return false;
-	}
+	createPostFramebuffers(gl);
 	
 	var vertices = [
 	-1.0,  1.0,
@@ -83,6 +55,19 @@ function loadPostProcessing(gl) {
 }
 
 function doPostProcessing() {
+	if(!postProcessFBO) {
+		createPostFramebuffers(gl);
+	}
+	if(postProcessFBO.width != gl.canvas.width || postProcessFBO.height != gl.canvas.height) {
+		gl.deleteFramebuffer(postProcessFBO);
+		gl.deleteFramebuffer(postProcessBlitFBO);
+		gl.deleteTexture(postProcessTex);
+		gl.deleteTexture(postProcessBlitTex);
+		gl.deleteRenderbuffer(postProcessDepthBuf);
+		postProcessFBO = null;
+		postProcessBlitTex.deleted = true;
+		return;
+	}
 	gl.disable(gl.DEPTH_TEST);
 	blitFramebuffers();
 
@@ -100,6 +85,8 @@ function doPostProcessing() {
 }
 
 function passToScreen() {
+	gl.bindTexture(gl.TEXTURE_2D, emptyTex);
+
 	postProcessVAO.overrideShader = false;
 	postProcessVAO.shader.bind();
 	bindColorTexture(postProcessVAO.shader);
@@ -108,13 +95,57 @@ function passToScreen() {
 	gl.enable(gl.DEPTH_TEST);
 }
 
+function createPostFramebuffers(gl) {
+	postProcessFBO = gl.createFramebuffer();
+	postProcessFBO.width = gl.canvas.width;
+	postProcessFBO.height = gl.canvas.height;
+	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, postProcessFBO);
+	postProcessTex = createColorTex(gl, floatingPointSupported);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, postProcessTex, 0);
+	
+	postProcessDepthBuf = gl.createRenderbuffer();
+	gl.bindRenderbuffer(gl.RENDERBUFFER, postProcessDepthBuf);
+	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, gl.canvas.width, gl.canvas.height);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, postProcessDepthBuf);
+	gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+	
+	var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	if(status != gl.FRAMEBUFFER_COMPLETE) {
+		console.error("Main framebuffer incomplete! Status " + status);
+		webglError = "Failure while initialising WebGL!";
+		return false;
+	}
+	
+	postProcessBlitFBO = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, postProcessBlitFBO);
+	postProcessBlitTex = createColorTex(gl, floatingPointSupported);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, postProcessBlitTex, 0);
+	
+	var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+	if(status != gl.FRAMEBUFFER_COMPLETE) {
+		console.error("Main framebuffer incomplete! Status " + status);
+		webglError = "Failure while initialising WebGL!";
+		return false;
+	}
+}
+
 function bindColorTexture(shader) {
+	if(postProcessBlitTex.deleted) {
+		return;
+	}
 	shader.setInt("color", 0);
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, postProcessBlitTex);
 }
 
 function blitFramebuffers() {
+	if(!postProcessFBO) {
+		return;
+	}
 	gl.bindFramebuffer(gl.READ_FRAMEBUFFER, postProcessFBO);
 	gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, postProcessBlitFBO);
 	gl.blitFramebuffer(0, 0, gl.canvas.width, gl.canvas.height,

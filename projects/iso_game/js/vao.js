@@ -100,6 +100,8 @@ VAOBuilder.prototype.create = function() {
 	return new VAO(this.gl, this.vao, this.elementCount, this.attribs, this.shader);
 };
 
+Shader.shaderCache = new Map();
+
 function Shader(gl, name, program) {
 	this.gl = gl;
 	this.name = name;
@@ -169,6 +171,9 @@ Shader.prototype.setVec2 = function(name, value) {
 };
 
 Shader.loadShaderProgram = function(gl, shaderName) {
+	if(Shader.shaderCache.has(shaderName)) {
+		return Shader.shaderCache.get(shaderName);
+	}
 	var program = gl.createProgram();
 	var vs = Shader.loadShader(gl, shaderName, "vs", gl.VERTEX_SHADER);
 	var fs = Shader.loadShader(gl, shaderName, "fs", gl.FRAGMENT_SHADER);
@@ -190,7 +195,9 @@ Shader.loadShaderProgram = function(gl, shaderName) {
 	gl.deleteShader(vs);
 	gl.deleteShader(fs);
 	
-	return new Shader(gl, shaderName, program);
+	var shader = new Shader(gl, shaderName, program);
+	Shader.shaderCache.set(shaderName, shader);
+	return shader;
 };
 
 Shader.loadShader = function(gl, name, fileType, shaderType) {
