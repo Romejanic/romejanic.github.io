@@ -1,10 +1,11 @@
 {
   "homepage": "http://planetminecraft.com/member/RomejanicDev",
   "promos": {
-    "1.12-latest": "1.0.0",
-    "1.12-recommended": "1.0.0"
+    "1.12-latest": "1.0.1",
+    "1.12-recommended": "1.0.1"
   },
   "1.12": {
-    "1.0.0": "First release"
+    "1.0.0": "First release",
+    "1.0.1": "Just a test...\nNothing to see here..."
   }
 }
