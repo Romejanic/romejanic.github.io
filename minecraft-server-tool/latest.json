@@ -5,9 +5,9 @@
     "- First release"
   ],
   "url": {
-    "win32": "https://romejanic.github.io/minecraft-server-tool/",
-    "darwin": "https://romejanic.github.io/minecraft-server-tool/",
-    "linux": "https://romejanic.github.io/minecraft-server-tool/",
-    "default": "https://romejanic.github.io/minecraft-server-tool/"
+    "win32": "https://romejanic.github.io/minecraft-server-tool/download?platform=win",
+    "darwin": "https://romejanic.github.io/minecraft-server-tool/download?platform=mac",
+    "linux": "https://romejanic.github.io/minecraft-server-tool/download?platform=linux",
+    "default": "https://romejanic.github.io/minecraft-server-tool/download"
   }
 }
