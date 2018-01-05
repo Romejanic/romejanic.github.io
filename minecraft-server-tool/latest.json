@@ -1,8 +1,8 @@
 {
-  "version": "1.0.0",
-  "buildID": 1,
+  "version": "1.0.1",
+  "buildID": 2,
   "changelog": [
-    "First release"
+    "- First release"
   ],
   "url": {
     "win32": "https://romejanic.github.io/minecraft-server-tool/",
