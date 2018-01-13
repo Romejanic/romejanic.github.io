@@ -4,6 +4,9 @@
     "type": "vanilla",
     "humanReadableName": "Vanilla 1.12.2",
     "url": "https://s3.amazonaws.com/Minecraft.Download/versions/1.12.2/minecraft_server.1.12.2.jar",
+    "args": [
+      "nogui"
+    ],
     "requires": 1
   },
   {
@@ -11,6 +14,9 @@
     "type": "vanilla",
     "humanReadableName": "Vanilla 1.12.1",
     "url": "https://s3.amazonaws.com/Minecraft.Download/versions/1.12.1/minecraft_server.1.12.1.jar",
+    "args": [
+      "nogui"
+    ],
     "requires": 1
   },
   {
@@ -18,6 +24,9 @@
     "type": "vanilla",
     "humanReadableName": "Vanilla 1.12",
     "url": "https://s3.amazonaws.com/Minecraft.Download/versions/1.12/minecraft_server.1.12.jar",
+    "args": [
+      "nogui"
+    ],
     "requires": 1
   },
   {
@@ -25,6 +34,9 @@
     "type": "vanilla",
     "humanReadableName": "Vanilla 1.11.2",
     "url": "https://s3.amazonaws.com/Minecraft.Download/versions/1.11.2/minecraft_server.1.11.2.jar",
+    "args": [
+      "nogui"
+    ],
     "requires": 1
   },
   {
@@ -32,6 +44,9 @@
     "type": "vanilla",
     "humanReadableName": "Vanilla 1.11.2",
     "url": "https://s3.amazonaws.com/Minecraft.Download/versions/1.11.1/minecraft_server.1.11.1.jar",
+    "args": [
+      "nogui"
+    ],
     "requires": 1
   },
   {
@@ -39,6 +54,9 @@
     "type": "vanilla",
     "humanReadableName": "Vanilla 1.11",
     "url": "https://s3.amazonaws.com/Minecraft.Download/versions/1.11/minecraft_server.1.11.jar",
+    "args": [
+      "nogui"
+    ],
     "requires": 1
   }
 ]
